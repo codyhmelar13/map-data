@@ -1,10 +1,8 @@
+name: Render
 on:
   workflow_dispatch:
   push:
     branches: ["main"]
-
-permissions:
-  contents: write
 
 env:
   LOG: INFO
@@ -15,10 +13,14 @@ concurrency:
 
 jobs:
   update:
-    runs-on: macos-latest
+    runs-on: ubuntu-24.04-arm
+    permissions:
+      contents: write
 
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          persist-credentials: false
       - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
         with:
           python-version: '3.14' 
@@ -28,11 +30,9 @@ jobs:
       - uses: baptiste0928/cargo-install@f204293d9709061b7bc1756fec3ec4e2cd57dec0 # v3.4.0
         with:
           crate: usvg
-      - run: brew install geos
       - run: pip install -Ur requirements.txt
       - run: python render.py
-      - run: echo "message=update @ $(date +%Y%m%dT%H:%M:%S%Z)" >> "$GITHUB_ENV"
       - uses: EndBug/add-and-commit@290ea2c423ad77ca9c62ae0f5b224379612c0321 # v10.0.0
         with:
           default_author: github_actions
-          message: ${{ env.message }}
+          message: Render
